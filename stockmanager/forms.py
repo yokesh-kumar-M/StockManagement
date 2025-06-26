@@ -4,4 +4,4 @@ from .models import StockItem
 class StockItemForm(forms.ModelForm):
     class Meta:
         model = StockItem
-        fields = ['name', 'quantity', 'price_per_unit']
+        fields = ['symbol', 'name', 'price_usd']

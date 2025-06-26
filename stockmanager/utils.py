@@ -7,7 +7,16 @@ def fetch_crypto_prices():
         "order": "market_cap_desc",
         "per_page": 10,
         "page": 1,
-        "sparkline": "false"
+        "sparkline": False
     }
-    response = requests.get(url, params=params)
-    return response.json()
+
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"[ERROR] API returned status code: {response.status_code}")
+            return []
+    except requests.exceptions.RequestException as e:
+        print("[ERROR] Failed to fetch data from CoinGecko:", e)
+        return []

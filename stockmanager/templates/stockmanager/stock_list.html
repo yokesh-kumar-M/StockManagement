@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Crypto Dashboard</title>
     {% load static %}
+    {% load custom_tags %}
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap & Custom Styles -->
@@ -19,7 +20,8 @@
         <div>
             {% if user.is_authenticated %}
                 <a class="btn btn-outline-light me-2" href="{% url 'add_stock' %}">Add Coin</a>
-                <a class="btn btn-outline-danger" href="{% url 'logout' %}">Logout</a>
+                <a class="btn btn-outline-danger me-2" href="{% url 'delete_stock_page' %}">Delete Coin</a>
+                <a class="btn btn-outline-warning" href="{% url 'logout' %}">Logout</a>
             {% else %}
                 <a class="btn btn-outline-light" href="{% url 'login' %}">Login</a>
             {% endif %}
@@ -38,6 +40,7 @@
                     <th>Name</th>
                     <th>Symbol</th>
                     <th>Price (USD)</th>
+                    <th class="text-center">Your Holdings</th>
                     <th class="text-center">Actions</th>
                 </tr>
             </thead>
@@ -50,31 +53,36 @@
                             <td>${{ item.price_usd }}</td>
                             <td class="text-center">
                                 {% if user.is_authenticated %}
-                                    <a href="{% url 'buy_stock' item.pk %}" class="btn btn-success btn-sm">Buy</a>
-                                    <a href="{% url 'delete_stock' item.pk %}" class="btn btn-danger btn-sm"
-                                       onclick="return confirmDelete('{{ item.name }}')">Delete</a>
+                                    {% with item.userholding_set.all|get_user_holding:user as holding %}
+                                        {% if holding %}
+                                            <span class="badge bg-info text-dark">You own: {{ holding.quantity }}</span>
+                                        {% else %}
+                                            <span class="text-muted">You own: 0</span>
+                                        {% endif %}
+                                    {% endwith %}
                                 {% else %}
-                                    <span class="text-muted">Login to Buy</span>
+                                    <span class="text-muted">Login to view</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'buy_stock' item.pk %}" class="btn btn-success btn-sm">Buy</a>
+                                    <a href="{% url 'sell_stock' item.pk %}" class="btn btn-warning btn-sm">Sell</a>
+                                {% else %}
+                                    <span class="text-muted">Login to trade</span>
                                 {% endif %}
                             </td>
                         </tr>
                     {% endif %}
                 {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center text-muted">No crypto data available.</td>
+                        <td colspan="5" class="text-center text-muted">No crypto data available.</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-
-<!-- JS -->
-<script>
-    function confirmDelete(name) {
-        return confirm("Are you sure you want to delete " + name + "?");
-    }
-</script>
 
 </body>
 </html>
