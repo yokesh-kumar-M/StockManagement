@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crypto Dashboard</title>
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap & Custom Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="bg-black text-white">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">Crypto Exchange</a>
+        <div>
+            {% if user.is_authenticated %}
+                <a class="btn btn-outline-light me-2" href="{% url 'add_stock' %}">Add Coin</a>
+                <a class="btn btn-outline-danger" href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a class="btn btn-outline-light" href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Live Cryptocurrency Prices</h2>
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover text-white align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Symbol</th>
+                    <th>Price (USD)</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    {% if item.price_usd > 0 %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td class="text-uppercase">{{ item.symbol }}</td>
+                            <td>${{ item.price_usd }}</td>
+                            <td class="text-center">
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'buy_stock' item.pk %}" class="btn btn-success btn-sm">Buy</a>
+                                    <a href="{% url 'delete_stock' item.pk %}" class="btn btn-danger btn-sm"
+                                       onclick="return confirmDelete('{{ item.name }}')">Delete</a>
+                                {% else %}
+                                    <span class="text-muted">Login to Buy</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No crypto data available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JS -->
+<script>
+    function confirmDelete(name) {
+        return confirm("Are you sure you want to delete " + name + "?");
+    }
+</script>
+
+</body>
+</html>
