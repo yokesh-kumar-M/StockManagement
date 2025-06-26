@@ -65,6 +65,7 @@ python manage.py runserver
 
 ```
 
+```bash
 Project Structure:
 stockmanagement/
 ├── stockmanagement/        # Django project settings
@@ -78,3 +79,5 @@ stockmanagement/
 │   │   └── css/style.css
 ├── db.sqlite3              # Database file
 ├── manage.py               # Django CLI
+
+```
