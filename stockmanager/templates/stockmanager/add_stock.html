@@ -3,6 +3,7 @@
 <head>
     <title>Add Stock</title>
     {% load static %}
+    {% load widget_tweaks %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
@@ -16,10 +17,31 @@
 
 <div class="container">
   <div class="card shadow p-4">
-    <h4 class="mb-3">Add New Stock Item</h4>
+    <h4 class="mb-3">Add New Indian Stock</h4>
+    
     <form method="POST">
       {% csrf_token %}
-      {{ form.as_p }}
+      <div class="mb-3">
+        <label class="form-label">Stock Symbol (e.g., TCS)</label>
+        {{ form.symbol|add_class:"form-control" }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Company Name</label>
+        {{ form.name|add_class:"form-control" }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Price (INR)</label>
+        {{ form.price_inr|add_class:"form-control" }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">ISIN (Optional)</label>
+        {{ form.isin|add_class:"form-control" }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Sector (Optional)</label>
+        {{ form.sector|add_class:"form-control" }}
+      </div>
+      
       <button type="submit" class="btn btn-primary">Save</button>
     </form>
   </div>

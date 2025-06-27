@@ -1,0 +1,47 @@
+{% extends 'stockmanager/base.html' %}
+{% load static %}
+
+{% block title %}Transaction History{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg bg-dark text-white">
+        <h3 class="mb-4 text-info text-center">Your Transaction History</h3>
+
+        {% if transactions %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped text-white">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Stock</th>
+                        <th>Action</th>
+                        <th>Quantity</th>
+                        <th>Price (₹)</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in transactions %}
+                    <tr>
+                        <td>{{ tx.stock.name }} ({{ tx.stock.symbol }})</td>
+                        <td>
+                            {% if tx.action == 'BUY' %}
+                                <span class="badge bg-success">Buy</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Sell</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ tx.quantity }}</td>
+                        <td>₹{{ tx.price }}</td>
+                        <td>{{ tx.timestamp|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">No transactions found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

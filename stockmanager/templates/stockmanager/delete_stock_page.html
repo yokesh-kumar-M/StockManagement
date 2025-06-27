@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center text-success mb-4">Manage Your Crypto Investments</h2>
+    <h2 class="text-center text-danger mb-4">Manage Your Indian Stock Listings</h2>
 
     {% if items %}
         <table class="table table-striped table-hover shadow-sm">
@@ -13,7 +13,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Symbol</th>
-                    <th>Price (USD)</th>
+                    <th>Price (INR)</th>
                     <th class="text-center">Delete</th>
                 </tr>
             </thead>
@@ -22,7 +22,7 @@
                     <tr>
                         <td>{{ item.name }}</td>
                         <td>{{ item.symbol }}</td>
-                        <td>${{ item.price_usd }}</td>
+                        <td>₹{{ item.price_inr }}</td>
                         <td class="text-center">
                             <form method="post" action="{% url 'delete_stock_page' %}">
                                 {% csrf_token %}
