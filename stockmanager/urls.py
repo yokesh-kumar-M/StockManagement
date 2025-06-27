@@ -12,4 +12,6 @@ urlpatterns = [
     path('deposit/', views.deposit_money, name='deposit_money'),
     path('api/prices/', views.stock_prices_api, name='stock_prices_api'),
     path('transactions/', views.transaction_history, name='transaction_history'),
+    path('transactions/clear/', views.clear_transaction_history, name='clear_transaction_history'),
+
 ]

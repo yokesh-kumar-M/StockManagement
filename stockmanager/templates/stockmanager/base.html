@@ -20,15 +20,14 @@
         <div class="d-flex align-items-center">
             <a class="btn btn-outline-light me-3" href="{% url 'home' %}">Home</a>
             <a class="navbar-brand fw-bold mb-0 h1" href="#">Stock Exchange</a>
+            {% if user.is_superuser %}
+                    <a class="btn btn-outline-info me-2" href="{% url 'deposit_money' %}">Deposit</a>
+            {% endif %}
         </div>
 
         <!-- Right Side: Auth Buttons -->
         <div>
             {% if user.is_authenticated %}
-                {% if user.is_superuser %}
-                    <a class="btn btn-outline-info me-2" href="{% url 'deposit_money' %}">Deposit</a>
-                {% endif %}
-                <a class="btn btn-outline-light me-2" href="{% url 'transaction_history' %}">History</a>
                 <a class="btn btn-outline-light me-2" href="{% url 'add_stock' %}">Add Stock</a>
                 <a class="btn btn-outline-warning me-2" href="{% url 'delete_stock_page' %}">Delete Stock</a>
                 <a class="btn btn-outline-light me-2" href="{% url 'my_portfolio' %}">My Portfolio</a>

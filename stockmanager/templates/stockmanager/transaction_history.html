@@ -4,7 +4,14 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4 text-center">Your Transaction History</h2>
+
     {% if transactions %}
+        <!-- Clear History Button -->
+        <form method="post" action="{% url 'clear_transaction_history' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger mb-3 float-end">Clear History</button>
+        </form>
+
         <table class="table table-dark table-hover text-white">
             <thead>
                 <tr>
@@ -32,3 +39,4 @@
     {% endif %}
 </div>
 {% endblock %}
+    

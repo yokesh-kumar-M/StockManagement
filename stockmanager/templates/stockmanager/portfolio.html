@@ -2,6 +2,7 @@
 {% block title %}My Portfolio{% endblock %}
 
 {% block content %}
+{% load math_filters %}
 <div class="container mt-5">
     <div class="card p-4 bg-dark text-white shadow-lg">
         <h3 class="mb-4 text-info text-center">My Portfolio</h3>
@@ -28,9 +29,11 @@
                     <tr>
                         <td>{{ h.stock.name }}</td>
                         <td>{{ h.stock.symbol }}</td>
-                        <td>{{ h.quantity }}</td>
+                        <td>₹{{ h.quantity|floatformat:2 }}</td>
                         <td>₹{{ h.stock.price_inr|floatformat:2 }}</td>
-                        <td>₹{{ h.quantity|floatformat:2|add:"0"|floatformat:2|floatformat:2|mul:h.stock.price_inr }}</td>
+                        <td>₹{{ h.quantity|floatformat:2|floatformat:2 }}</td>
+                        <td>₹{{ h.quantity|mul:h.stock.price_inr|floatformat:2 }}</td>
+                        <td>₹{{ h.total_value|floatformat:2 }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

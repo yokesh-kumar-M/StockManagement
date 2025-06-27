@@ -114,6 +114,9 @@ def my_portfolio(request):
     holdings = UserHolding.objects.filter(user=request.user).select_related('stock')
     total_value = sum(h.quantity * h.stock.price_inr for h in holdings)
 
+    for holding in holdings:
+        holding.total_value = holding.quantity * holding.stock.price_inr
+
     return render(request, 'stockmanager/portfolio.html', {
         'holdings': holdings,
         'total_value': total_value,
@@ -124,6 +127,12 @@ def my_portfolio(request):
 def transaction_history(request):
     transactions = Transaction.objects.filter(user=request.user).order_by('-timestamp')
     return render(request, 'stockmanager/transaction_history.html', {'transactions': transactions})
+
+@login_required
+def clear_transaction_history(request):
+    Transaction.objects.filter(user=request.user).delete()
+    messages.success(request, "Transaction history cleared.")
+    return redirect('transaction_history')
 
 @login_required
 def delete_stock_page(request):
