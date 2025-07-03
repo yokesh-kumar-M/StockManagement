@@ -1,6 +1,7 @@
-from django.db.models.signals import post_migrate
+from django.db.models.signals import post_migrate, post_save
+from django.contrib.auth.models import User
 from django.dispatch import receiver
-from .models import Stock
+from .models import Stock, UserProfile
 
 @receiver(post_migrate)
 def create_default_stocks(sender, **kwargs):
@@ -14,3 +15,8 @@ def create_default_stocks(sender, **kwargs):
 
     for stock in default_stocks:
         Stock.objects.get_or_create(symbol=stock["symbol"], defaults=stock)
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)

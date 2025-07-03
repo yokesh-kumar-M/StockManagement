@@ -19,29 +19,41 @@ class Stock(models.Model):
 # Extend user with balance
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    balance = models.FloatField(default=10000.0)  # Default balance
+    balance = models.FloatField(default=1000.0)  # Default balance
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
 
     def __str__(self):
         return f"{self.user.username} Profile"
+    
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    try:
+        instance.userprofile.save()
+    except UserProfile.DoesNotExist:
+        UserProfile.objects.create(user=instance)
 
 # Track holdings
 class UserHolding(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    quantity = models.FloatField(default=0.0)
+    symbol = models.CharField(max_length=10)  # e.g., 'TCS.NS'
+    quantity = models.PositiveIntegerField(default=0)
 
-    def total_value(self):
-        return self.quantity * self.stock.price_inr
+    def __str__(self):
+        return f"{self.user.username} - {self.symbol} ({self.quantity})"
 
 # Track every buy/sell
 class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    action = models.CharField(max_length=4, choices=[('BUY', 'Buy'), ('SELL', 'Sell')])
-    quantity = models.IntegerField()
+    stock_name = models.CharField(max_length=50)
+    action = models.CharField(max_length=10)  # BUY/SELL
+    quantity = models.PositiveIntegerField(default=1)
     price = models.FloatField()
-    timestamp = models.DateTimeField(default=timezone.now)
-
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
     def __str__(self):
         return f"{self.user} {self.action} {self.quantity} of {self.stock.symbol} at ₹{self.price}"
 

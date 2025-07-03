@@ -1,67 +1,106 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.views import LogoutView
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.contrib import messages
 from .forms import StockForm, RegisterForm
 from .models import Stock, UserHolding, Transaction, UserProfile
-# from .utils import fetch_stock_prices  # Optional: implement later for real data
 
-
-#  Optional: Uncomment & implement if using API to update stock prices
-# def stock_list(request):
-#     data = fetch_stock_prices()  # e.g., [{'symbol': 'TCS', 'price': 3770.0}, ...]
-#     for item in data:
-#         obj, created = Stock.objects.get_or_create(symbol=item["symbol"])
-#         if obj.is_active:
-#             obj.name = item.get("name", obj.name)
-#             obj.price_inr = item.get("price", obj.price_inr)
-#             obj.save()
-
-#     items = Stock.objects.filter(is_active=True).exclude(price_inr=0.0).order_by('-price_inr')
-#     return render(request, 'stockmanager/stock_list.html', {"items": items})
-
-
-#  Use this version if you're manually managing stocks (initial version)
+import yfinance as yf
+import matplotlib.pyplot as plt
+import io
+import urllib, base64
 import random
 
-def stock_list(request):
-    items = Stock.objects.filter(is_active=True)
-    for stock in items:
-        delta = stock.price_inr * random.uniform(-0.05, 0.05)
-        stock.price_inr = max(stock.price_inr + delta, 1)
-        stock.save()
+YAHOO_STOCK_SYMBOLS = [
+    {'symbol': 'TCS.NS', 'name': 'Tata Consultancy Services'},
+    {'symbol': 'INFY.NS', 'name': 'Infosys'},
+    {'symbol': 'RELIANCE.NS', 'name': 'Reliance Industries'},
+    {'symbol': 'HDFCBANK.NS', 'name': 'HDFC Bank'},
+    {'symbol': 'ICICIBANK.NS', 'name': 'ICICI Bank'},
+    {'symbol': 'ITC.NS', 'name': 'ITC Ltd'},
+    {'symbol': 'WIPRO.NS', 'name': 'Wipro'},
+    {'symbol': 'HCLTECH.NS', 'name': 'HCL Technologies'},
+    {'symbol': 'SBIN.NS', 'name': 'State Bank of India'},
+    {'symbol': 'LT.NS', 'name': 'Larsen & Toubro'},
+]
 
-    user_balance = None
+def stock_list(request):
+    symbols = ['TCS.NS', 'INFY.NS', 'RELIANCE.NS', 'HDFCBANK.NS', 'ITC.NS',
+    'WIPRO.NS', 'ICICIBANK.NS', 'SBIN.NS', 'KOTAKBANK.NS', 'HCLTECH.NS']
+    stocks = []
+
+    for symbol in symbols:
+        cached = cache.get(symbol)
+
+        if not cached:
+            try:
+                ticker = yf.Ticker(symbol)
+                info = ticker.info
+                price = info.get("currentPrice", 0)
+
+                cached = {
+                    "symbol": symbol,
+                    "name": info.get("shortName", symbol),
+                    "price_inr": round(price, 2) if price else 0
+                }
+
+                # Cache only valid prices
+                if cached["price_inr"] > 0:
+                    cache.set(symbol, cached, timeout=300)  # 5 min cache
+            except Exception as e:
+                cached = {"symbol": symbol, "name": symbol, "price_inr": 0}
+
+        stocks.append(cached)
+
+    holdings = {}
+    balance = None
+
     if request.user.is_authenticated:
-        profile, _ = UserProfile.objects.get_or_create(user=request.user)
-        user_balance = profile.balance
+        user_holdings = UserHolding.objects.filter(user=request.user)
+        holdings = {h.symbol.upper(): h.quantity for h in user_holdings}
+
+        try:
+            balance = request.user.userprofile.balance
+        except:
+            balance = 0  
 
     return render(request, 'stockmanager/stock_list.html', {
-        "items": items,
-        "user_balance": user_balance
+        "items": stocks,
+        "user_balance": balance,
+        "holdings": holdings
     })
 
-
-
 @login_required
-def buy_stock(request, pk):
-    stock = get_object_or_404(Stock, pk=pk)
-    user_profile = request.user.userprofile
-    price = stock.price_inr
+def buy_stock(request):
+    symbol = request.GET.get('symbol')
+    stock = yf.Ticker(symbol)
+    info = stock.info
+    price = info.get('currentPrice')
 
-    if user_profile.balance >= price:
-        holding, _ = UserHolding.objects.get_or_create(user=request.user, stock=stock)
+    if not price:
+        messages.error(request, "Stock data unavailable.")
+        return redirect('home')
+
+    profile = request.user.userprofile
+    if profile.balance >= price:
+        holding, _ = UserHolding.objects.get_or_create(user=request.user, symbol=symbol)
         holding.quantity += 1
         holding.save()
-        user_profile.balance -= price
-        user_profile.save()
-        Transaction.objects.create(user=request.user, stock=stock, action='BUY', quantity=1, price=price)
-        messages.success(request, f"Bought 1 {stock.name} at ₹{price}")
+        profile.balance -= price
+        profile.save()
+
+        Transaction.objects.create(user=request.user, stock_name=symbol, action='BUY', quantity=1, price=price)
+        messages.success(request, f"Bought 1 share of {symbol} at ₹{price}")
     else:
-        messages.error(request, f"Insufficient balance to buy {stock.name}")
+        messages.error(request, "Insufficient balance.")
 
     return redirect('home')
 
@@ -84,34 +123,76 @@ def stock_prices_api(request):
     return JsonResponse({'stocks': data})
 
 @login_required
-def sell_stock(request, pk):
-    stock = get_object_or_404(Stock, pk=pk)
-    user_profile = request.user.userprofile
-    try:
-        holding = UserHolding.objects.get(user=request.user, stock=stock)
-        if holding.quantity > 0:
-            holding.quantity -= 1
-            holding.save()
+def sell_stock(request):
+    symbol = request.GET.get('symbol')
+    stock = yf.Ticker(symbol)
+    info = stock.info
+    price = info.get('currentPrice')
 
-            user_profile.balance += stock.price_inr
-            user_profile.save()
+    holding = UserHolding.objects.filter(user=request.user, symbol=symbol).first()
+    if holding and holding.quantity > 0:
+        holding.quantity -= 1
+        holding.save()
+        if holding.quantity == 0:
+            holding.delete()
 
-            Transaction.objects.create(user=request.user, stock=stock, action='SELL', quantity=1, price=stock.price_inr)
+        profile = request.user.userprofile
+        profile.balance += price
+        profile.save()
 
-            messages.success(request, f"Sold 1 unit of {stock.name} at ₹{stock.price_inr}. New balance: ₹{user_profile.balance:.2f}")
+        Transaction.objects.create(user=request.user, stock_name=symbol, action='SELL', quantity=1, price=price)
+        messages.success(request, f"Sold 1 share of {symbol} at ₹{price}")
+    else:
+        messages.error(request, "You don't own this stock.")
 
-            if holding.quantity == 0:
-                holding.delete()
-                messages.info(request, f"You no longer hold any {stock.name}.")
-        else:
-            messages.warning(request, f"You don't hold any {stock.name} to sell.")
-    except UserHolding.DoesNotExist:
-        messages.error(request, f"You don't own any {stock.name} to sell.")
     return redirect('home')
+
+def stock_graph(request):
+    symbol = request.GET.get('symbol', 'AAPL')  # Default: Apple
+    stock = yf.Ticker(symbol)
+    hist = stock.history(period="5d", interval="1h")
+
+    if hist.empty:
+        return render(request, 'stockmanager/stock_chart.html', {
+            'symbol': symbol,
+            'chart': None,
+            'error': "Stock symbol not found or data unavailable."
+        })
+
+    latest_price = round(hist['Close'].iloc[-1], 2)
+    min_price = round(hist['Close'].min(), 2)
+    max_price = round(hist['Close'].max(), 2)
+    avg_price = round(hist['Close'].mean(), 2)
+
+    # Plotting
+    plt.figure(figsize=(10, 4))
+    plt.plot(hist.index, hist['Close'], marker='o', color='cyan')
+    plt.title(f"{symbol.upper()} - Last 5 Days (Hourly)")
+    plt.xlabel("Time")
+    plt.ylabel("Price (USD)")
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    image_uri = 'data:image/png;base64,' + urllib.parse.quote(base64.b64encode(buf.read()))
+    plt.close()
+
+    return render(request, 'stockmanager/stock_chart.html', {
+        'symbol': symbol,
+        'chart': image_uri,
+        'latest_price': latest_price,
+        'min_price': min_price,
+        'max_price': max_price,
+        'avg_price': avg_price,
+        'error': None
+    })
 
 @login_required
 def my_portfolio(request):
-    holdings = UserHolding.objects.filter(user=request.user).select_related('stock')
+    holdings = UserHolding.objects.filter(user=request.user)
     total_value = sum(h.quantity * h.stock.price_inr for h in holdings)
 
     for holding in holdings:
@@ -178,14 +259,41 @@ def deposit_money(request):
     users = User.objects.all()
     return render(request, 'stockmanager/deposit.html', {'users': users})
 
-def register_view(request):
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)  
-            return redirect('home')
-    else:
-        form = RegisterForm()
+@login_required
+def withdraw_money(request):
+    profile = request.user.userprofile
 
-    return render(request, "registration/register.html", {"form": form})
+    if request.method == 'POST':
+        try:
+            amount = float(request.POST.get('amount'))
+            if amount <= 0:
+                messages.error(request, "Enter a positive amount.")
+            elif amount > profile.balance:
+                messages.error(request, "Insufficient balance.")
+            else:
+                profile.balance -= amount
+                profile.save()
+                messages.success(request, f"₹{amount} withdrawn successfully.")
+                return redirect('home')
+        except ValueError:
+            messages.error(request, "Invalid amount entered.")
+
+    return render(request, 'stockmanager/withdraw_money.html')
+
+def register(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return login(request)  # Optional: log them in after registering
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+class Custom_Logout(LogoutView):
+    def get(self, request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5 text-white">
+    <h2 class="mb-4 text-center">Withdraw Money</h2>
+    <form method="post" class="w-50 mx-auto">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount (INR)</label>
+            <input type="number" step="0.01" class="form-control" name="amount" required>
+        </div>
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-danger">Withdraw</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

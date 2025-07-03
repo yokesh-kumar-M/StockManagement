@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from stockmanager.views import stock_graph
 
 urlpatterns = [
     path('admin/', admin.site.urls),
