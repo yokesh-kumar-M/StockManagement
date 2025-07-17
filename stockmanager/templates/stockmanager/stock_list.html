@@ -39,8 +39,8 @@
         <div class="ms-auto">
             {% if user.is_authenticated %}
                  <!-- Add/Delete disabled for live stocks -->
-                <a class="btn btn-outline-light me-2" href="{% url 'add_stock' %}">Add Stock</a>
-                <a class="btn btn-outline-danger me-2" href="{% url 'delete_stock_page' %}">Delete Stock</a> 
+              <!--  <a class="btn btn-outline-light me-2" href="{% url 'add_stock' %}">Add Stock</a>
+                <a class="btn btn-outline-danger me-2" href="{% url 'delete_stock_page' %}">Delete Stock</a> -->
                 <a class="btn btn-outline-warning" href="{% url 'logout' %}">Logout</a>
             {% else %}
                 <a class="btn btn-outline-light" href="{% url 'login' %}">Login</a>
