@@ -9,49 +9,98 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stockmanager', '0003_stockitem_is_active'),
+        ("stockmanager", "0003_stockitem_is_active"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Stock',
+            name="Stock",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('symbol', models.CharField(max_length=10)),
-                ('price_inr', models.FloatField(default=0.0)),
-                ('is_active', models.BooleanField(default=True)),
-                ('isin', models.CharField(blank=True, max_length=12, null=True)),
-                ('sector', models.CharField(blank=True, max_length=50, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("symbol", models.CharField(max_length=10)),
+                ("price_inr", models.FloatField(default=0.0)),
+                ("is_active", models.BooleanField(default=True)),
+                ("isin", models.CharField(blank=True, max_length=12, null=True)),
+                ("sector", models.CharField(blank=True, max_length=50, null=True)),
             ],
         ),
         migrations.AlterField(
-            model_name='userholding',
-            name='stock',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='stockmanager.stock'),
+            model_name="userholding",
+            name="stock",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="stockmanager.stock"
+            ),
         ),
         migrations.CreateModel(
-            name='Transaction',
+            name="Transaction",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(choices=[('BUY', 'Buy'), ('SELL', 'Sell')], max_length=4)),
-                ('quantity', models.IntegerField()),
-                ('price', models.FloatField()),
-                ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
-                ('stock', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='stockmanager.stock')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[("BUY", "Buy"), ("SELL", "Sell")], max_length=4
+                    ),
+                ),
+                ("quantity", models.IntegerField()),
+                ("price", models.FloatField()),
+                ("timestamp", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "stock",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="stockmanager.stock",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='UserProfile',
+            name="UserProfile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('balance', models.FloatField(default=10000.0)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("balance", models.FloatField(default=10000.0)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.DeleteModel(
-            name='StockItem',
+            name="StockItem",
         ),
     ]

@@ -71,6 +71,7 @@ def fetch_live_price(symbol: str) -> dict:
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 
+
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -93,6 +94,7 @@ class RegisterView(APIView):
 
 # ─── Profile ──────────────────────────────────────────────────────────────────
 
+
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
 
@@ -102,6 +104,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 
 # ─── Stocks ───────────────────────────────────────────────────────────────────
+
 
 class StockListView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -122,6 +125,7 @@ class StockListView(APIView):
 
 
 # ─── Trading ──────────────────────────────────────────────────────────────────
+
 
 class TradeView(APIView):
     throttle_classes = [TradeThrottle]
@@ -144,7 +148,9 @@ class TradeView(APIView):
         price = Decimal(str(price_data["price_inr"]))
 
         if price <= 0:
-            return Response({"error": "Stock data unavailable. Try again later."}, status=400)
+            return Response(
+                {"error": "Stock data unavailable. Try again later."}, status=400
+            )
 
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         total_cost = price * quantity
@@ -152,15 +158,20 @@ class TradeView(APIView):
         if action == Transaction.BUY:
             if profile.balance < total_cost:
                 return Response(
-                    {"error": f"Insufficient balance. Need ₹{total_cost:.2f}, have ₹{profile.balance:.2f}."},
+                    {
+                        "error": f"Insufficient balance. Need ₹{total_cost:.2f}, have ₹{profile.balance:.2f}."
+                    },
                     status=400,
                 )
             holding, created = UserHolding.objects.get_or_create(
-                user=request.user, symbol=symbol,
+                user=request.user,
+                symbol=symbol,
                 defaults={"average_price": price, "quantity": 0},
             )
             new_qty = holding.quantity + quantity
-            holding.average_price = (holding.average_price * holding.quantity + price * quantity) / new_qty
+            holding.average_price = (
+                holding.average_price * holding.quantity + price * quantity
+            ) / new_qty
             holding.quantity = new_qty
             holding.save()
             profile.balance -= total_cost
@@ -169,7 +180,9 @@ class TradeView(APIView):
             try:
                 holding = UserHolding.objects.get(user=request.user, symbol=symbol)
             except UserHolding.DoesNotExist:
-                return Response({"error": "You do not own any shares of this stock."}, status=400)
+                return Response(
+                    {"error": "You do not own any shares of this stock."}, status=400
+                )
 
             if holding.quantity < quantity:
                 return Response(
@@ -194,49 +207,66 @@ class TradeView(APIView):
             price=price,
         )
 
-        return Response({
-            "message": f"{action} order executed.",
-            "symbol": symbol,
-            "quantity": quantity,
-            "price": float(price),
-            "total_value": float(total_cost),
-            "new_balance": float(profile.balance),
-        })
+        return Response(
+            {
+                "message": f"{action} order executed.",
+                "symbol": symbol,
+                "quantity": quantity,
+                "price": float(price),
+                "total_value": float(total_cost),
+                "new_balance": float(profile.balance),
+            }
+        )
 
 
 # ─── Portfolio ────────────────────────────────────────────────────────────────
+
 
 class PortfolioView(APIView):
     @extend_schema(summary="Get current user portfolio with live P&L")
     def get(self, request):
         holdings = list(UserHolding.objects.filter(user=request.user, quantity__gt=0))
 
-        prices = {s["symbol"]: fetch_live_price(s["symbol"])["price_inr"] for s in TRACKED_SYMBOLS}
+        prices = {
+            s["symbol"]: fetch_live_price(s["symbol"])["price_inr"]
+            for s in TRACKED_SYMBOLS
+        }
         for h in holdings:
             if h.symbol not in prices:
                 prices[h.symbol] = fetch_live_price(h.symbol)["price_inr"]
 
-        serializer = UserHoldingSerializer(holdings, many=True, context={"prices": prices})
+        serializer = UserHoldingSerializer(
+            holdings, many=True, context={"prices": prices}
+        )
 
         total_invested = sum(float(h.average_price) * h.quantity for h in holdings)
-        total_current = sum(prices.get(h.symbol, float(h.average_price)) * h.quantity for h in holdings)
+        total_current = sum(
+            prices.get(h.symbol, float(h.average_price)) * h.quantity for h in holdings
+        )
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
-        return Response({
-            "holdings": serializer.data,
-            "summary": {
-                "total_invested": round(total_invested, 2),
-                "total_current_value": round(total_current, 2),
-                "total_pnl": round(total_current - total_invested, 2),
-                "total_pnl_pct": round(
-                    (total_current - total_invested) / total_invested * 100, 2
-                ) if total_invested else 0,
-                "balance": float(profile.balance),
-            },
-        })
+        return Response(
+            {
+                "holdings": serializer.data,
+                "summary": {
+                    "total_invested": round(total_invested, 2),
+                    "total_current_value": round(total_current, 2),
+                    "total_pnl": round(total_current - total_invested, 2),
+                    "total_pnl_pct": (
+                        round(
+                            (total_current - total_invested) / total_invested * 100, 2
+                        )
+                        if total_invested
+                        else 0
+                    ),
+                    "balance": float(profile.balance),
+                },
+            }
+        )
 
 
 # ─── Transactions ─────────────────────────────────────────────────────────────
+
 
 class TransactionListView(generics.ListAPIView):
     serializer_class = TransactionSerializer
@@ -261,10 +291,13 @@ class TransactionClearView(APIView):
 
 # ─── Admin Actions ────────────────────────────────────────────────────────────
 
+
 class DepositView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
-    @extend_schema(request=DepositSerializer, summary="Admin: deposit funds to a user account")
+    @extend_schema(
+        request=DepositSerializer, summary="Admin: deposit funds to a user account"
+    )
     def post(self, request):
         serializer = DepositSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -279,14 +312,19 @@ class DepositView(APIView):
         profile.balance += amount
         profile.save()
 
-        return Response({
-            "message": f"₹{amount} deposited to {user.username}.",
-            "new_balance": float(profile.balance),
-        })
+        return Response(
+            {
+                "message": f"₹{amount} deposited to {user.username}.",
+                "new_balance": float(profile.balance),
+            }
+        )
 
 
 class WithdrawView(APIView):
-    @extend_schema(request=WithdrawSerializer, summary="Withdraw funds from authenticated user's account")
+    @extend_schema(
+        request=WithdrawSerializer,
+        summary="Withdraw funds from authenticated user's account",
+    )
     def post(self, request):
         serializer = WithdrawSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -303,10 +341,13 @@ class WithdrawView(APIView):
         profile.balance -= amount
         profile.save()
 
-        return Response({"message": f"₹{amount} withdrawn.", "new_balance": float(profile.balance)})
+        return Response(
+            {"message": f"₹{amount} withdrawn.", "new_balance": float(profile.balance)}
+        )
 
 
 # ─── Charts ───────────────────────────────────────────────────────────────────
+
 
 class StockChartView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -316,7 +357,9 @@ class StockChartView(APIView):
         parameters=[
             OpenApiParameter("symbol", str, description="Stock ticker, e.g. TCS.NS"),
             OpenApiParameter("period", str, description="Period: 1d, 5d, 1mo, 3mo, 1y"),
-            OpenApiParameter("interval", str, description="Interval: 1m, 5m, 15m, 1h, 1d"),
+            OpenApiParameter(
+                "interval", str, description="Interval: 1m, 5m, 15m, 1h, 1d"
+            ),
         ],
         summary="Get OHLCV candlestick data for a stock",
     )
@@ -359,7 +402,12 @@ class StockChartView(APIView):
                     "max": round(float(closes.max()), 2),
                     "avg": round(float(closes.mean()), 2),
                     "change": round(float(closes.iloc[-1] - closes.iloc[0]), 2),
-                    "change_pct": round(float((closes.iloc[-1] - closes.iloc[0]) / closes.iloc[0] * 100), 2),
+                    "change_pct": round(
+                        float(
+                            (closes.iloc[-1] - closes.iloc[0]) / closes.iloc[0] * 100
+                        ),
+                        2,
+                    ),
                 },
             }
             cache.set(cache_key, data, timeout=300)
@@ -370,6 +418,7 @@ class StockChartView(APIView):
 
 
 # ─── Health ───────────────────────────────────────────────────────────────────
+
 
 @api_view(["GET"])
 @permission_classes([permissions.AllowAny])

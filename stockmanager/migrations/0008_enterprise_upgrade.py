@@ -2,6 +2,7 @@
 Enterprise upgrade migration — adds new fields, fixes types, adds indexes.
 Safe to run on a fresh Supabase PostgreSQL database (runs after 0007).
 """
+
 from decimal import Decimal
 
 import django.db.models.deletion
@@ -54,12 +55,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="stock",
             name="price_inr",
-            field=models.DecimalField(decimal_places=2, default=Decimal("0.00"), max_digits=12),
+            field=models.DecimalField(
+                decimal_places=2, default=Decimal("0.00"), max_digits=12
+            ),
         ),
         migrations.AddField(
             model_name="stock",
             name="created_at",
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -71,12 +76,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="userprofile",
             name="balance",
-            field=models.DecimalField(decimal_places=2, default=Decimal("10000.00"), max_digits=14),
+            field=models.DecimalField(
+                decimal_places=2, default=Decimal("10000.00"), max_digits=14
+            ),
         ),
         migrations.AddField(
             model_name="userprofile",
             name="created_at",
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         # ── UserHolding ───────────────────────────────────────────────────────
@@ -88,7 +97,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="userholding",
             name="average_price",
-            field=models.DecimalField(decimal_places=2, default=Decimal("0.00"), max_digits=12),
+            field=models.DecimalField(
+                decimal_places=2, default=Decimal("0.00"), max_digits=12
+            ),
         ),
         migrations.AddField(
             model_name="userholding",
@@ -126,11 +137,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="transaction",
             name="total_value",
-            field=models.DecimalField(decimal_places=2, default=Decimal("0.00"), max_digits=14),
+            field=models.DecimalField(
+                decimal_places=2, default=Decimal("0.00"), max_digits=14
+            ),
         ),
         # Data migrations
         migrations.RunPython(populate_transaction_symbol, migrations.RunPython.noop),
-        migrations.RunPython(populate_transaction_total_value, migrations.RunPython.noop),
+        migrations.RunPython(
+            populate_transaction_total_value, migrations.RunPython.noop
+        ),
         # ── Indexes ───────────────────────────────────────────────────────────
         migrations.AddIndex(
             model_name="transaction",

@@ -29,7 +29,15 @@ class UserHoldingAdmin(admin.ModelAdmin):
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ("user", "symbol", "action_badge", "quantity", "price", "total_value", "timestamp")
+    list_display = (
+        "user",
+        "symbol",
+        "action_badge",
+        "quantity",
+        "price",
+        "total_value",
+        "timestamp",
+    )
     list_filter = ("action", "symbol")
     search_fields = ("user__username", "symbol", "stock_name")
     readonly_fields = ("total_value", "timestamp")
@@ -38,7 +46,10 @@ class TransactionAdmin(admin.ModelAdmin):
 
     def action_badge(self, obj):
         color = "green" if obj.action == "BUY" else "red"
-        return format_html('<span style="color: {}; font-weight: bold;">{}</span>', color, obj.action)
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>', color, obj.action
+        )
+
     action_badge.short_description = "Action"
 
 

@@ -1,5 +1,9 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 from . import views
 
@@ -21,7 +25,11 @@ urlpatterns = [
     path("portfolio/", views.PortfolioView.as_view(), name="api_portfolio"),
     # Transactions
     path("transactions/", views.TransactionListView.as_view(), name="api_transactions"),
-    path("transactions/clear/", views.TransactionClearView.as_view(), name="api_transactions_clear"),
+    path(
+        "transactions/clear/",
+        views.TransactionClearView.as_view(),
+        name="api_transactions_clear",
+    ),
     # Admin
     path("admin/deposit/", views.DepositView.as_view(), name="api_deposit"),
     path("withdraw/", views.WithdrawView.as_view(), name="api_withdraw"),

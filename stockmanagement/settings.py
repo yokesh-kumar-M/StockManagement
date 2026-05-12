@@ -5,9 +5,15 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ─── Core ────────────────────────────────────────────────────────────────────
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-key-change-me-in-production")
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY", "dev-insecure-key-change-me-in-production"
+)
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if h.strip()
+]
 
 # ─── Apps ─────────────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -75,7 +81,9 @@ DATABASES = {
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -156,7 +164,9 @@ SPECTACULAR_SETTINGS = {
 }
 
 # ─── CORS ─────────────────────────────────────────────────────────────────────
-_cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+_cors_origins = os.environ.get(
+    "CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+)
 CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(",") if o.strip()]
 CORS_ALLOW_CREDENTIALS = True
 if DEBUG:

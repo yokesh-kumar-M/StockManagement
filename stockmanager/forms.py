@@ -8,7 +8,7 @@ from .models import Stock
 class StockForm(forms.ModelForm):
     class Meta:
         model = Stock
-        fields = ['symbol', 'name', 'price_inr', 'isin', 'sector']
+        fields = ["symbol", "name", "price_inr", "isin", "sector"]
 
 
 class RegisterForm(UserCreationForm):

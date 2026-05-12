@@ -6,48 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stockmanager', '0004_stock_alter_userholding_stock_transaction_and_more'),
+        ("stockmanager", "0004_stock_alter_userholding_stock_transaction_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='transaction',
-            name='stock',
+            model_name="transaction",
+            name="stock",
         ),
         migrations.RemoveField(
-            model_name='userholding',
-            name='stock',
+            model_name="userholding",
+            name="stock",
         ),
         migrations.AddField(
-            model_name='transaction',
-            name='stock_name',
-            field=models.CharField(default='UNKNOWN', max_length=50),
+            model_name="transaction",
+            name="stock_name",
+            field=models.CharField(default="UNKNOWN", max_length=50),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='userholding',
-            name='symbol',
-            field=models.CharField(default='UNKNOWN', max_length=10),
+            model_name="userholding",
+            name="symbol",
+            field=models.CharField(default="UNKNOWN", max_length=10),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='action',
+            model_name="transaction",
+            name="action",
             field=models.CharField(max_length=10),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='quantity',
+            model_name="transaction",
+            name="quantity",
             field=models.PositiveIntegerField(default=1),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='timestamp',
+            model_name="transaction",
+            name="timestamp",
             field=models.DateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='userholding',
-            name='quantity',
+            model_name="userholding",
+            name="quantity",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

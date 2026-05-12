@@ -1,4 +1,5 @@
 """Unit tests for stockmanager models."""
+
 from decimal import Decimal
 
 import pytest
@@ -25,14 +26,19 @@ class TestUserProfile:
 @pytest.mark.django_db
 class TestStock:
     def test_stock_creation(self):
-        stock = Stock.objects.create(name="TCS", symbol="TCS.NS", price_inr=Decimal("3500.00"))
+        stock = Stock.objects.create(
+            name="TCS", symbol="TCS.NS", price_inr=Decimal("3500.00")
+        )
         assert str(stock) == "TCS (TCS.NS)"
 
     def test_symbol_unique_constraint(self):
         Stock.objects.create(name="TCS", symbol="TCS.NS", price_inr=Decimal("3500.00"))
         from django.db import IntegrityError
+
         with pytest.raises(IntegrityError):
-            Stock.objects.create(name="TCS Duplicate", symbol="TCS.NS", price_inr=Decimal("3600.00"))
+            Stock.objects.create(
+                name="TCS Duplicate", symbol="TCS.NS", price_inr=Decimal("3600.00")
+            )
 
 
 @pytest.mark.django_db
@@ -74,5 +80,6 @@ class TestUserHolding:
         user = User.objects.create_user(username="holder", password="pass12345")
         UserHolding.objects.create(user=user, symbol="TCS.NS", quantity=5)
         from django.db import IntegrityError
+
         with pytest.raises(IntegrityError):
             UserHolding.objects.create(user=user, symbol="TCS.NS", quantity=3)

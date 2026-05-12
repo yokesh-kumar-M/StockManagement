@@ -7,7 +7,9 @@ from ..models import Stock, UserHolding, UserProfile, Transaction
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=8, style={"input_type": "password"})
+    password = serializers.CharField(
+        write_only=True, min_length=8, style={"input_type": "password"}
+    )
     password2 = serializers.CharField(write_only=True, style={"input_type": "password"})
     email = serializers.EmailField(required=True)
 
@@ -38,14 +40,36 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ("username", "email", "first_name", "last_name", "balance", "created_at")
-        read_only_fields = ("username", "email", "first_name", "last_name", "created_at")
+        fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "balance",
+            "created_at",
+        )
+        read_only_fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "created_at",
+        )
 
 
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
-        fields = ("id", "name", "symbol", "price_inr", "sector", "isin", "is_active", "updated_at")
+        fields = (
+            "id",
+            "name",
+            "symbol",
+            "price_inr",
+            "sector",
+            "isin",
+            "is_active",
+            "updated_at",
+        )
         read_only_fields = ("id", "updated_at")
 
 
@@ -58,8 +82,14 @@ class UserHoldingSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserHolding
         fields = (
-            "id", "symbol", "quantity", "average_price",
-            "current_price", "current_value", "profit_loss", "profit_loss_pct",
+            "id",
+            "symbol",
+            "quantity",
+            "average_price",
+            "current_price",
+            "current_value",
+            "profit_loss",
+            "profit_loss_pct",
             "updated_at",
         )
 
@@ -87,7 +117,16 @@ class UserHoldingSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ("id", "symbol", "stock_name", "action", "quantity", "price", "total_value", "timestamp")
+        fields = (
+            "id",
+            "symbol",
+            "stock_name",
+            "action",
+            "quantity",
+            "price",
+            "total_value",
+            "timestamp",
+        )
         read_only_fields = ("id", "total_value", "timestamp")
 
 
@@ -102,8 +141,12 @@ class TradeSerializer(serializers.Serializer):
 
 class DepositSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
-    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("0.01"))
+    amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=Decimal("0.01")
+    )
 
 
 class WithdrawSerializer(serializers.Serializer):
-    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("0.01"))
+    amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=Decimal("0.01")
+    )

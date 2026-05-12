@@ -71,11 +71,15 @@ def stock_list(request):
         except Exception:
             balance = 0
 
-    return render(request, "stockmanager/stock_list.html", {
-        "items": stocks,
-        "user_balance": balance,
-        "holdings": holdings,
-    })
+    return render(
+        request,
+        "stockmanager/stock_list.html",
+        {
+            "items": stocks,
+            "user_balance": balance,
+            "holdings": holdings,
+        },
+    )
 
 
 @login_required
@@ -89,6 +93,7 @@ def buy_stock(request):
         return redirect("home")
 
     from decimal import Decimal
+
     price_d = Decimal(str(price))
     profile = request.user.profile
 
@@ -97,12 +102,15 @@ def buy_stock(request):
         return redirect("home")
 
     holding, created = UserHolding.objects.get_or_create(
-        user=request.user, symbol=symbol,
+        user=request.user,
+        symbol=symbol,
         defaults={"average_price": price_d},
     )
     if not created:
         total_qty = holding.quantity + 1
-        holding.average_price = (holding.average_price * holding.quantity + price_d) / total_qty
+        holding.average_price = (
+            holding.average_price * holding.quantity + price_d
+        ) / total_qty
         holding.quantity = total_qty
     else:
         holding.quantity = 1
@@ -112,8 +120,12 @@ def buy_stock(request):
     profile.save()
 
     Transaction.objects.create(
-        user=request.user, symbol=symbol, stock_name=data["name"],
-        action=Transaction.BUY, quantity=1, price=price_d,
+        user=request.user,
+        symbol=symbol,
+        stock_name=data["name"],
+        action=Transaction.BUY,
+        quantity=1,
+        price=price_d,
     )
     messages.success(request, f"Bought 1 share of {symbol} at ₹{price:.2f}")
     return redirect("home")
@@ -130,6 +142,7 @@ def sell_stock(request):
         return redirect("home")
 
     from decimal import Decimal
+
     price_d = Decimal(str(price))
 
     try:
@@ -153,8 +166,12 @@ def sell_stock(request):
     profile.save()
 
     Transaction.objects.create(
-        user=request.user, symbol=symbol, stock_name=data["name"],
-        action=Transaction.SELL, quantity=1, price=price_d,
+        user=request.user,
+        symbol=symbol,
+        stock_name=data["name"],
+        action=Transaction.SELL,
+        quantity=1,
+        price=price_d,
     )
     messages.success(request, f"Sold 1 share of {symbol} at ₹{price:.2f}")
     return redirect("home")
@@ -170,17 +187,23 @@ def my_portfolio(request):
         h.pnl = round((h.current_price - float(h.average_price)) * h.quantity, 2)
 
     total_value = sum(h.current_value for h in holdings)
-    return render(request, "stockmanager/portfolio.html", {
-        "holdings": holdings,
-        "total_value": total_value,
-        "balance": request.user.profile.balance,
-    })
+    return render(
+        request,
+        "stockmanager/portfolio.html",
+        {
+            "holdings": holdings,
+            "total_value": total_value,
+            "balance": request.user.profile.balance,
+        },
+    )
 
 
 @login_required
 def transaction_history(request):
     transactions = Transaction.objects.filter(user=request.user).order_by("-timestamp")
-    return render(request, "stockmanager/transaction_history.html", {"transactions": transactions})
+    return render(
+        request, "stockmanager/transaction_history.html", {"transactions": transactions}
+    )
 
 
 @login_required
@@ -196,10 +219,15 @@ def stock_graph(request):
     hist = ticker.history(period="5d", interval="1h")
 
     if hist.empty:
-        return render(request, "stockmanager/stock_chart.html", {
-            "symbol": symbol, "chart": None,
-            "error": "Stock symbol not found or data unavailable.",
-        })
+        return render(
+            request,
+            "stockmanager/stock_chart.html",
+            {
+                "symbol": symbol,
+                "chart": None,
+                "error": "Stock symbol not found or data unavailable.",
+            },
+        )
 
     plt.figure(figsize=(10, 4))
     plt.plot(hist.index, hist["Close"], marker="o", color="cyan")
@@ -213,18 +241,24 @@ def stock_graph(request):
     buf = io.BytesIO()
     plt.savefig(buf, format="png")
     buf.seek(0)
-    image_uri = "data:image/png;base64," + urllib.parse.quote(base64.b64encode(buf.read()))
+    image_uri = "data:image/png;base64," + urllib.parse.quote(
+        base64.b64encode(buf.read())
+    )
     plt.close()
 
-    return render(request, "stockmanager/stock_chart.html", {
-        "symbol": symbol,
-        "chart": image_uri,
-        "latest_price": round(float(hist["Close"].iloc[-1]), 2),
-        "min_price": round(float(hist["Close"].min()), 2),
-        "max_price": round(float(hist["Close"].max()), 2),
-        "avg_price": round(float(hist["Close"].mean()), 2),
-        "error": None,
-    })
+    return render(
+        request,
+        "stockmanager/stock_chart.html",
+        {
+            "symbol": symbol,
+            "chart": image_uri,
+            "latest_price": round(float(hist["Close"].iloc[-1]), 2),
+            "min_price": round(float(hist["Close"].min()), 2),
+            "max_price": round(float(hist["Close"].max()), 2),
+            "avg_price": round(float(hist["Close"].mean()), 2),
+            "error": None,
+        },
+    )
 
 
 def stock_prices_api(request):
@@ -262,6 +296,7 @@ def deposit_money(request):
         amount = float(request.POST.get("amount", 0))
         user = get_object_or_404(User, id=user_id)
         from decimal import Decimal
+
         user.profile.balance += Decimal(str(amount))
         user.profile.save()
         messages.success(request, f"₹{amount} deposited to {user.username}")
@@ -276,6 +311,7 @@ def withdraw_money(request):
     if request.method == "POST":
         try:
             from decimal import Decimal
+
             amount = Decimal(str(request.POST.get("amount")))
             if amount <= 0:
                 messages.error(request, "Enter a positive amount.")

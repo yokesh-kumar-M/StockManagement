@@ -8,7 +8,7 @@ def fetch_crypto_prices():
         "order": "market_cap_desc",
         "per_page": 10,
         "page": 1,
-        "sparkline": False
+        "sparkline": False,
     }
 
     try:

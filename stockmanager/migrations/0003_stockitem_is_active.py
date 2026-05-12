@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stockmanager', '0002_remove_stockitem_added_date_and_more'),
+        ("stockmanager", "0002_remove_stockitem_added_date_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stockitem',
-            name='is_active',
+            model_name="stockitem",
+            name="is_active",
             field=models.BooleanField(default=True),
         ),
     ]

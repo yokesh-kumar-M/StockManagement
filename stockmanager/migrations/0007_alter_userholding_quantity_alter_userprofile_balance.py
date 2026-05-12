@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stockmanager', '0006_alter_userholding_quantity'),
+        ("stockmanager", "0006_alter_userholding_quantity"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userholding',
-            name='quantity',
+            model_name="userholding",
+            name="quantity",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AlterField(
-            model_name='userprofile',
-            name='balance',
+            model_name="userprofile",
+            name="balance",
             field=models.FloatField(default=1000.0),
         ),
     ]

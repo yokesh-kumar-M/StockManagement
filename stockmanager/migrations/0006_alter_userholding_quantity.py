@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stockmanager', '0005_remove_transaction_stock_remove_userholding_stock_and_more'),
+        (
+            "stockmanager",
+            "0005_remove_transaction_stock_remove_userholding_stock_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userholding',
-            name='quantity',
+            model_name="userholding",
+            name="quantity",
             field=models.PositiveIntegerField(default=1000),
         ),
     ]
