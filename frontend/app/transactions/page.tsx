@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { History, Trash2, ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
-import { clsx } from "clsx";
 import type { PaginatedResponse, Transaction } from "@/lib/types";
 import { transactionsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
