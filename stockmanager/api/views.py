@@ -16,7 +16,6 @@ from ..models import UserHolding, UserProfile, Transaction
 from .serializers import (
     DepositSerializer,
     RegisterSerializer,
-    StockSerializer,
     TradeSerializer,
     TransactionSerializer,
     UserHoldingSerializer,
@@ -229,7 +228,9 @@ class PortfolioView(APIView):
                 "total_invested": round(total_invested, 2),
                 "total_current_value": round(total_current, 2),
                 "total_pnl": round(total_current - total_invested, 2),
-                "total_pnl_pct": round((total_current - total_invested) / total_invested * 100, 2) if total_invested else 0,
+                "total_pnl_pct": round(
+                    (total_current - total_invested) / total_invested * 100, 2
+                ) if total_invested else 0,
                 "balance": float(profile.balance),
             },
         })

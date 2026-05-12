@@ -1,5 +1,6 @@
 import requests
 
+
 def fetch_crypto_prices():
     url = "https://api.coingecko.com/api/v3/coins/markets"
     params = {

@@ -1,17 +1,13 @@
+import base64
 import io
 import logging
 import urllib.parse
-import base64
 
 import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import yfinance as yf
-
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LogoutView
 from django.core.cache import cache
@@ -21,7 +17,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import StockForm, RegisterForm
-from .models import Stock, UserHolding, Transaction, UserProfile
+from .models import Stock, UserHolding, Transaction
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
