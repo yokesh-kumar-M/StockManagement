@@ -11,8 +11,8 @@ class Stock(models.Model):
     symbol = models.CharField(max_length=20, unique=True, db_index=True)
     price_inr = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     is_active = models.BooleanField(default=True)
-    isin = models.CharField(max_length=12, blank=True, null=True)
-    sector = models.CharField(max_length=100, blank=True, null=True)
+    isin = models.CharField(max_length=12, blank=True, default="")
+    sector = models.CharField(max_length=100, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

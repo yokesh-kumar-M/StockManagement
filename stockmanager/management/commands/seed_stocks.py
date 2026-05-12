@@ -41,6 +41,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"  Exists:  {data['name']}")
 
+        exists_count = len(STOCKS) - created_count
         self.stdout.write(
-            self.style.SUCCESS(f"\nDone. {created_count} new stocks created, {len(STOCKS) - created_count} already existed.")
+            self.style.SUCCESS(f"\nDone. {created_count} new stocks created, {exists_count} already existed.")
         )
